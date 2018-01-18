@@ -209,5 +209,5 @@ while threading.current_thread() ==threading.main_thread() and threading.active_
 #     
 #     workbook.close()
     print(ldss)
-    input("wait..")
+    input("wait...")
     break
