@@ -1,69 +1,69 @@
 # coding utf8
 import itertools
-import time
 import sys
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
-from threading import Thread
+from threading import Thread, current_thread
 import threading
-import datetime
-# import xlsxwriter
+import time
+import xlsxwriter
+from time import strftime
+
+
 
 url ="http://www.motorim.org.tw/query/Query_Check_Print.aspx?Car_No="
-ts =time.time()
+ldss =([])
+# licenset =set()
+# brandt =set()
+# emittt =set()
+# cyclet =set()
+# oDatet =set()
+# iDatet =set()
 
-#    /*AAA-0000 to ZZZ-9999(need add xlsx function)*/
-def w2():
-    for i in range(65,91):
-        for j in range(65, 91):
-            for k in range(65, 91):
-                for num in range(1,10000):
-                    html =urlopen(url+chr(i)+chr(j)+chr(k)+"-"+str(num).zfill(4)).read().decode("utf-8")
-                    bsObj =BeautifulSoup(html,"html.parser")
-                    CC =bsObj.find("span",{"id":"lblCc"})
-                    OPD =bsObj.find("span",{"id":"lblOpDate"})
-                    ISD =bsObj.find("span",{"id":"lblIssueDt"})
-                    try:
-                        print (chr(i)+chr(j)+chr(k)+"-"+str(num).zfill(4)+"\t"+CC.get_text()+"\t"+OPD.get_text()+"\t"+ISD.get_text())
-                    except:
-                        print (chr(i)+chr(j)+chr(k)+"-"+str(num).zfill(4)+"\t"+"no data")
-#    /*AAA-0000 to ZZZ-9999*/
+expenses = (
+    ['Rent', 1000,"yes"],
+    ['Gas',   100],
+    ['Food',  300],
+    ['Gym',    50],
+)
 
 
-#    /*AAA-000 to ZZZ-999(need add xlsx function)*/
-def w3():
-    for i in range(65,91):
-        for j in range(65, 91):
-            for k in range(65, 91):
-                for num in range(1,1000):
-                    html =urlopen(url+chr(i)+chr(j)+chr(k)+"-"+str(num).zfill(3)).read().decode("utf-8")
-                    bsObj =BeautifulSoup(html,"html.parser")
-                    CC =bsObj.find("span",{"id":"lblCc"})
-                    OPD =bsObj.find("span",{"id":"lblOpDate"})
-                    ISD =bsObj.find("span",{"id":"lblIssueDt"})
-                    try:
-                        print (chr(i)+chr(j)+chr(k)+"-"+str(num).zfill(3)+"\t"+CC.get_text()+"\t"+OPD.get_text()+"\t"+ISD.get_text())
-                    except:
-                        print (chr(i)+chr(j)+chr(k)+"-"+str(num).zfill(3)+"\t"+"no data")
-    
-#    /*AAA-000 to ZZZ-999*/
-
-#    /*get license number via thread number*/
-def w32(threadNumber,LNStart,LNEnd,LCShift):
-    for num in range(int(LNStart),int(LNEnd)):
+def w32(threadNumber,LNStart,LNEnd,LCShift):        #get licenses
+    for num in range(int(LNStart),int(LNEnd)+1):
         html =urlopen(url+LC(LCShift+threadNumber)+"-"+str(num).zfill(3)).read().decode("utf-8")
-        #
-#         print(url+LC(LCShift+threadNumber)+"-"+str(num).zfill(3))
-#         input("Press Enter to continue...")
-        #
         bsObj =BeautifulSoup(html,"html.parser")
+        BN =bsObj.find("span",{"id":"lblBrandName"})
         CC =bsObj.find("span",{"id":"lblCc"})
+        CY =bsObj.find("span",{"id":"lblCycle"})  
         OPD =bsObj.find("span",{"id":"lblOpDate"})
         ISD =bsObj.find("span",{"id":"lblIssueDt"})
+        FinalMEMO =bsObj.find("tr",{"bgcolor":"#FFFFFF"})
+        t =strftime("%Y/%m/%d  %H:%M:%S")
+        
+#         print(FinalMEMO.contents[2*8+1].get_text())     #final test date
+#         print(FinalMEMO.contents[2*1+1].get_text())     #final test station
+#         print(FinalMEMO.contents[2*2+1].get_text())     #test class
+#         print(FinalMEMO.contents[2*7+1].get_text())     #test result
+#         input("wait..")
+
         try:
-            print (LC(LCShift+threadNumber)+"-"+str(num).zfill(3)+"\t"+CC.get_text()+"\t"+OPD.get_text()+"\t"+ISD.get_text())
-        except:
+#             print (LC(LCShift+threadNumber)+"-"+str(num).zfill(3)+"\t"+BN.get_text()+"\t"\
+#                    +CC.get_text()+"\t"+CY.get_text()+"\t"+OPD.get_text()+"\t"+ISD.get_text()+"\t"\
+#                    +t)
+            ldd =LC(LCShift+threadNumber)+"-"+str(num).zfill(3)
+            brand =BN.get_text()
+            emitt =CC.get_text()
+            cycle =CY.get_text()
+            oDate =OPD.get_text()
+            iDate =ISD.get_text()
+            
+            ldss =([ldd,brand,emitt])
+            
+            
+        except AttributeError:
             print (LC(LCShift+threadNumber)+"-"+str(num).zfill(3)+"\t"+"no data")
+#             lds.add([ldd])
+#             licenset.add(LC(LCShift+threadNumber)+"-"+str(num).zfill(3))
     time.sleep(1)
     print(str(threading.current_thread())+"is done.")
 #    /*get license number via thread number*/
@@ -82,7 +82,7 @@ def LN(LNn):
     thirdN = (int)((int)(LNn % 9) + (int)((LNn % 9) + 6) / 10)
     return(str(firstN) +str(secondN) +str(thirdN))
 
-def LCCalc():
+def LCCalc():           #calculate LCShift
         exit =""
         while exit =="":
             print("LCShift Calculation")
@@ -91,7 +91,7 @@ def LCCalc():
                 print(LC(t_LCS+i))
             exit =input("Press enter to do another calculation, exit by type ANYTHING.")
 
-def LCHandle(c):
+def LCHandle(c):        #check LCShift's validation
     while True:
         c =input("LCShift? (enter \"?\" for more information): ")
         c =str(c).lower()
@@ -104,26 +104,26 @@ def LCHandle(c):
             except ValueError:
                 print("You just entered something weird, please check again or type \"?\" seek for help.")
     
-def LNHandle(i):
+def LNHandle(i):        #check LN's validation
     if i >899:
         print("Out of range, Considered as 899.")
         i =899
-    if i <0:
-        print("Out of range, Considered as 0.")
-        i =0
+    if i <=0:
+        print("Out of range, Considered as 1.")
+        i =1
     return i
 
-def LCHelp():
+def LCHelp():           #LCShift help
     print("LCShift is for shifting LC, basically if you either enter 1 or no input, it starts scraping License from AAA,AAB,AAC...\
         (according to your thread-using number, it could be more or less then that)\n\
         if you want to calculate shift amount of LC, simply enter \"calc\" and it'll show the result.")
-    print("--------Example--------")
-    print("thread-using =3 ,LCShift =1")
-    print("    output:AAA,AAB,AAC")
-    print("thread-using =7 ,LCShift =601")
-    print("    output:AXC,AXD,AXE,...,AXH,AXI")
-    print("thread-using =2 ,LCShift =2705")
-    print("    output:EAA,EAB\n")
+    print("--------Example--------\n\
+        thread-using =3 ,LCShift =1\n\
+                \t output:AAA,AAB,AAC\n\
+        thread-using =7 ,LCShift =601\n\
+                \t output:AXC,AXD,AXE,...,AXH,AXI\n\
+        thread-using =2 ,LCShift =2705\n\
+                \t output:EAA,EAB\n")
 
 def animate():          #loading animation
     for c in itertools.cycle(['|', '/', '-', '\\']):
@@ -145,15 +145,16 @@ def animate():          #loading animation
 LCShift =0
 LNStart =0
 LNEnd =0
-while True:
+while True:     #Setting thread-using number
     try:
-        UserThreadInput =input("Enter thread-using number (enter nothing will using 4): ")
+        UserThreadInput =input("Enter thread-using number (enter nothing will using 0): ")
         if UserThreadInput =="" or int(UserThreadInput) <0:
-            UserThreadInput =4
+            UserThreadInput =0
         break
     except ValueError:
         print("Please enter an integer.")
-while True:
+        
+while True:     #Setting LCShift
     LCShift =LCHandle(LCShift)
     if LCShift =="?" or LCShift =="help":
         LCHelp()
@@ -161,13 +162,16 @@ while True:
     if LCShift =="calc":
         LCCalc()
         continue
-    if LCShift+int(UserThreadInput) >17576: #over ZZZ or below AAA (NOT IMPLIED YET)
+    if LCShift+int(UserThreadInput) >17576 or LCShift <=0: #over ZZZ or below AAA
         print("From: "+LC(LCShift)+" to: "+LC(LCShift+int(UserThreadInput) ))
-        print("This result might not what you wanted, enter \"calc\" or \"?\" seek for help.\n") #fuck the negative
+        print("This result might not what you wanted (or you just entered a non-positive number),\n\
+enter \"calc\" or \"?\" seek for help.\n") 
         continue
-    print("LC from: "+LC(LCShift)+" to "+LC(LCShift+int(UserThreadInput))
+    print("LC from: "+LC(LCShift)+" to "+LC(LCShift+int(UserThreadInput)))
+    input("Press Enter to continue...\n")
     break
-while True:
+
+while True:     #Setting LNStart & LNEnd
     try:
         LNStart =(int)(input("LNStart? "))
         LNStart =LNHandle(LNStart)
@@ -178,38 +182,32 @@ while True:
             print("Please re-enter")
             continue
         print("LN From:　"+LN(LNStart)+" to: "+LN(LNEnd))
-        input("Press Enter to continue...")
+        input("Press Enter to continue...\n")
         break
     except ValueError:
         print("Please enter an integer.")
-for threadNumber in range(1,int(UserThreadInput)+1):
-    Thread(target=w32,args=(threadNumber,LN(LNStart),LN(LNEnd),LCShift,)).start()
-print(LNEnd)
+                
+for threadNumber in range(-1,int(UserThreadInput)):     #Creating threads
+    Thread(target=w32,args=(threadNumber+1,LN(LNStart),LN(LNEnd),LCShift,)).start()
 
 
-#    /*multiple thread workload*/
-
-
-
-#    /*home selection*/
-# print ("環保署機車定期檢驗資訊管理系統  scraping")
-# print ("1.Dumping AAA-0000 to ZZZ-9999(needs several days)")
-# print ("2.Dumping AAA-000 to ZZZ-999(needs several days)")
-# print ("3.Customize license range")
-# print ("4.test")
-# sel =input("\nSelection : ")
-# if sel == 1:
-#     w2()
-# elif sel ==2:
-#     w3()
-
-#    /*home selection*/
-
-
-
-# html =urlopen(url+"AAA-0001").read().decode("utf-8")
-# bsObj =BeautifulSoup(html,"html.parser")
-# CC =bsObj.find("span",{"id":"lblCc"})
-# OPD =bsObj.find("span",{"id":"lblOpDate"})
-# ISD =bsObj.find("span",{"id":"lblIssueDt"})
-# print CC.get_text()+"\t"+OPD.get_text()+"\t"+ISD.get_text()
+time.sleep(3)
+while threading.current_thread() ==threading.main_thread() and threading.active_count() ==1:
+#     adi =0
+#     row =0
+#     col =0
+#     workbook = xlsxwriter.Workbook('test1.xlsx')
+#     worksheet = workbook.add_worksheet()
+#     for d1,d2,d3,d4,d5,d6 in (lds):
+#         worksheet.write(row+2+adi, col+1, d1)
+#         worksheet.write(row+2+adi, col+2, d2)
+#         worksheet.write(row+2+adi, col+3, d3)
+#         worksheet.write(row+2+adi, col+4, d4)
+#         worksheet.write(row+2+adi, col+5, d5)
+#         worksheet.write(row+2+adi, col+6, d6)
+#         adi +=1
+#     
+#     workbook.close()
+    print(ldss)
+    input("wait..")
+    break
