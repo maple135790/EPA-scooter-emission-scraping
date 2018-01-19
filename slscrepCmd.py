@@ -1,11 +1,12 @@
 # coding utf8
 import itertools
-import sys
+import sys  
+import threading
+import time
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from threading import Thread
-import threading
-import time
+
 from time import strftime
 
 url ="http://www.motorim.org.tw/query/Query_Check_Print.aspx?Car_No="
@@ -149,16 +150,19 @@ while True:     #Setting LNStart & LNEnd
             print("Please re-enter")
             continue
         print("LN From: "+LN(LNStart)+" to: "+LN(LNEnd))
-        input("Press Enter to continue...\n")
+        input("Press Enter to start scraping...\n")
         break
     except ValueError:
         print("Please enter an integer.")
-                
+
+print("車牌號碼\t廠牌\t排氣量\t行程別\t出廠日\t發照日期 \t最後檢測日期\t定檢站號\t檢驗別\t檢測結果\t時間戳")                
 for threadNumber in range(-1,int(UserThreadInput)):     #Creating threads
     Thread(target=w32,args=(threadNumber+1,LN(LNStart),LN(LNEnd),LCShift,)).start()
-
-time.sleep(2+0.2*int(UserThreadInput))
-while threading.current_thread() ==threading.main_thread():
-    print("All done.")
-    input("Press any key to exit.")
-    break
+    
+while True:
+    if threading.active_count() == 1:   #check main_Thread
+        print("All done.")
+        input("Press any key to exit.")
+        break
+    else:
+        time.sleep(0.1)
