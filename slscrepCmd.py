@@ -54,9 +54,9 @@ def LCCalc():           #calculate LCShift
         while exitf =="":
             print("LCShift Calculation")
             t_LCS =int(input("test value of LCShift: "))
-            for i in range(0,UserThreadInput):
+            for i in range(0,int(UserThreadInput)):
                 print(LC(t_LCS+i))
-            exitf =input("Press enter to do another calculation, exit by type ANYTHING.")
+            exitf =input("Press enter to do another calculation, exit by type ANYTHING.\n")
 
 def LCHandle(c):        #check LCShift's validation
     while True:

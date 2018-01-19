@@ -3,16 +3,22 @@ import itertools
 import sys
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
-from threading import Thread, current_thread
+from threading import Thread
 import threading
 import time
 import xlsxwriter
 from time import strftime
 
 
-
+workbook = xlsxwriter.Workbook('test1.xlsx')
+worksheet = workbook.add_worksheet()
+row =0
+col =0
+ri =0
+ci =0
 url ="http://www.motorim.org.tw/query/Query_Check_Print.aspx?Car_No="
-ldss =([])
+liTuple =tuple([])
+liList =list()
 # licenset =set()
 # brandt =set()
 # emittt =set()
@@ -20,13 +26,21 @@ ldss =([])
 # oDatet =set()
 # iDatet =set()
 
-expenses = (
-    ['Rent', 1000,"yes"],
-    ['Gas',   100],
-    ['Food',  300],
-    ['Gym',    50],
-)
-
+def writeXlsx(ri,d1,d2,d3,d4,d5,d6):
+    while True:
+        if threading.current_thread() =="Thread-":
+            print(strftime("%M:%S"))
+            worksheet.write(row+2+ri, col+1, d1)
+            worksheet.write(row+2+ri, col+2, d2)
+            worksheet.write(row+2+ri, col+3, d3)
+            worksheet.write(row+2+ri, col+4, d4)
+            worksheet.write(row+2+ri, col+5, d5)
+            worksheet.write(row+2+ri, col+6, d6)
+            print(strftime("%M:%S"))
+            input("wait..")
+        else:
+            break
+    
 
 def w32(threadNumber,LNStart,LNEnd,LCShift):        #get licenses
     for num in range(int(LNStart),int(LNEnd)+1):
@@ -47,18 +61,17 @@ def w32(threadNumber,LNStart,LNEnd,LCShift):        #get licenses
 #         input("wait..")
 
         try:
-#             print (LC(LCShift+threadNumber)+"-"+str(num).zfill(3)+"\t"+BN.get_text()+"\t"\
-#                    +CC.get_text()+"\t"+CY.get_text()+"\t"+OPD.get_text()+"\t"+ISD.get_text()+"\t"\
-#                    +t)
+            print (LC(LCShift+threadNumber)+"-"+str(num).zfill(3)+"\t"+BN.get_text()+"\t"\
+                   +CC.get_text()+"\t"+CY.get_text()+"\t"+OPD.get_text()+"\t"+ISD.get_text()+"\t"\
+                   +t)
+#           ldd,brand,emitt ,cycle,oDate,iDate
             ldd =LC(LCShift+threadNumber)+"-"+str(num).zfill(3)
             brand =BN.get_text()
             emitt =CC.get_text()
             cycle =CY.get_text()
             oDate =OPD.get_text()
             iDate =ISD.get_text()
-            
-            ldss =([ldd,brand,emitt])
-            
+            writeXlsx(ri,ldd,brand,emitt,cycle,oDate,iDate)
             
         except AttributeError:
             print (LC(LCShift+threadNumber)+"-"+str(num).zfill(3)+"\t"+"no data")
@@ -83,13 +96,13 @@ def LN(LNn):
     return(str(firstN) +str(secondN) +str(thirdN))
 
 def LCCalc():           #calculate LCShift
-        exit =""
-        while exit =="":
+        exitf =""
+        while exitf =="":
             print("LCShift Calculation")
             t_LCS =int(input("test value of LCShift: "))
-            for i in range(0,UserThreadInput):
+            for i in range(0,int(UserThreadInput)):
                 print(LC(t_LCS+i))
-            exit =input("Press enter to do another calculation, exit by type ANYTHING.")
+            exitf =input("Press enter to do another calculation, exit by type ANYTHING.\n")
 
 def LCHandle(c):        #check LCShift's validation
     while True:
@@ -145,6 +158,7 @@ def animate():          #loading animation
 LCShift =0
 LNStart =0
 LNEnd =0
+
 while True:     #Setting thread-using number
     try:
         UserThreadInput =input("Enter thread-using number (enter nothing will using 0): ")
@@ -190,24 +204,7 @@ while True:     #Setting LNStart & LNEnd
 for threadNumber in range(-1,int(UserThreadInput)):     #Creating threads
     Thread(target=w32,args=(threadNumber+1,LN(LNStart),LN(LNEnd),LCShift,)).start()
 
-
-time.sleep(3)
-while threading.current_thread() ==threading.main_thread() and threading.active_count() ==1:
-#     adi =0
-#     row =0
-#     col =0
-#     workbook = xlsxwriter.Workbook('test1.xlsx')
-#     worksheet = workbook.add_worksheet()
-#     for d1,d2,d3,d4,d5,d6 in (lds):
-#         worksheet.write(row+2+adi, col+1, d1)
-#         worksheet.write(row+2+adi, col+2, d2)
-#         worksheet.write(row+2+adi, col+3, d3)
-#         worksheet.write(row+2+adi, col+4, d4)
-#         worksheet.write(row+2+adi, col+5, d5)
-#         worksheet.write(row+2+adi, col+6, d6)
-#         adi +=1
-#     
-#     workbook.close()
-    print(ldss)
+while threading.active_count() ==1:
+    workbook.close()
     input("wait...")
     break
