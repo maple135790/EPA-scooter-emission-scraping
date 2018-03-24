@@ -8,12 +8,14 @@ import threading
 import time
 from time import strftime
 
+
 url ="http://www.motorim.org.tw/query/Query_Check_Print.aspx?Car_No="
 exitFlag =0
 isBusy =0
 lock = threading.Lock()
 
-def getLicence(searchMode,threadNumber,OutputType,LNStart,LNEnd,LCShift):        #get licenses
+    
+def getLicence(searchMode,threadNumber,LNStart,LNEnd,LCShift):        #get licenses
     if searchMode == "1":
         for num in range(int(LNStart),int(LNEnd)+1):
             html =urlopen(url+LC(LCShift+threadNumber)+"-"+str(num).zfill(3)).read().decode("utf-8")
@@ -23,6 +25,7 @@ def getLicence(searchMode,threadNumber,OutputType,LNStart,LNEnd,LCShift):       
             CY =bsObj.find("span",{"id":"lblCycle"})  
             OPD =bsObj.find("span",{"id":"lblOpDate"})
             ISD =bsObj.find("span",{"id":"lblIssueDt"})
+            FinalMEMO =bsObj.find("tr",{"bgcolor":"#FFFFFF"})
             t =strftime("%Y/%m/%d  %H:%M:%S")
             try:
                 ldd =LC(LCShift+threadNumber)+"-"+str(num).zfill(3)
@@ -48,7 +51,7 @@ def getLicence(searchMode,threadNumber,OutputType,LNStart,LNEnd,LCShift):       
         sector[6][0],sector[6][1],sector[6][2] = "440", "441" ,"442"
         sector[7][0]                           = "444"
         rowData =[[[0 for x in range(w)] for y in range(h) ] for z in range(0, int(UserThreadInput))]
-    
+        
         for i in range(8):
             for j in range(3):
                 if not ((i,j)==(2,1)or(i,j)==(2,2)or(i,j)==(7,1)or(i,j)==(7,2)):
@@ -64,108 +67,13 @@ def getLicence(searchMode,threadNumber,OutputType,LNStart,LNEnd,LCShift):       
                     continue
                 
         lock.acquire()                  #File writing
-        CommandLineMode(OutputType,searchMode,threadNumber,rowData)
-        txtMode(OutputType,searchMode,threadNumber,rowData)
-        lock.release() 
-
-    elif searchMode =="3":
-#         while True:
-#         ma()
-        sv =startValue()
-#         current_LN =0
-        VDK =0
-        w, h = 2, 4
-        rowData =[[[0 for x in range(w)] for y in range(h) ] for z in range(0, int(UserThreadInput))]
-        for i in range(4):
-            for j in range(2):
-                html =urlopen(url+LC(LCShift+threadNumber-1)+"-"+sv.ClassDetr(VDK,sv)).read().decode("utf-8")              
-                bsObj =BeautifulSoup(html,"html.parser")
-                ISD =bsObj.find("span",{"id":"lblIssueDt"})
-                try:
-                    iDate =ISD.get_text()
-                    rowData[threadNumber-1][i][j] =sv.ClassDetr(VDK,sv)+"("+iDate[-6:]+")"
-#                     rowData[threadNumber-1][i][j] = ClassDetr(VDK,sv,enable)+"{}".format("("+iDate[-6:]+")")
-                    VDK +=1
-                except AttributeError:
-                    continue
-            
-        lock.acquire()                  #File writing
-        CommandLineMode(OutputType,searchMode,threadNumber,rowData)
-        txtMode(OutputType,searchMode,threadNumber,rowData)
-        lock.release() 
-        return
-
-# class myClass:
-#     var =0
-#     
-#     @staticmethod
-#     def sub(c):
-#         c +=1 
-#         return c
-# def ma():
-#     cls =myClass
-#     print(cls.sub(cls.var))
-
-
-class startValue:
-    Istart =0
-    IIstart =501
-    IIIstart =500
-    IVstart =1000
-    value =0
-    
-    @staticmethod
-    def ClassDetr(ValidDataChk,vcls):
-        if ValidDataChk <2:
-            if ValidDataChk ==0:
-                vcls.value = vcls.Istart
-        vcls.value+=1
-        return str(vcls.value).zfill(3)
-
-def sec1(threadNumber):
-    arr =[0 for z in range(int(UserThreadInput))]
-    arr[0]
-def sec2(c):
-    arr =[501 for z in range(int(UserThreadInput))]
-def sec3(c):
-    arr =[500 for z in range(int(UserThreadInput))]
-def sec4(c):
-    arr =[1000 for z in range(int(UserThreadInput))]
-
-
-# @test1("value":0) 
-def ClassDetr1(ValidDataChk):    
-    Istart =0
-    IIstart =501
-    IIIstart =500
-    IVstart =1000
-    
-    if ValidDataChk <2:
-        if ValidDataChk ==0:
-            value = Istart
-        value+=1
-        return str(value).zfill(3)
+        CommandLineMode(True,searchMode,threadNumber,rowData)
+        txtMode(False,searchMode,threadNumber,rowData)
+        lock.release()
         
-    elif (ValidDataChk >=2) and (ValidDataChk <4):
-        if ValidDataChk ==2:
-            value = IIstart
-        value-=1
-        return str(value)
-    
-    elif (ValidDataChk >=4) and (ValidDataChk <6):
-        if ValidDataChk ==4:
-            value =IIIstart
-        value+=1
-        return str(value)
-    
-    else: 
-        if ValidDataChk ==6:
-            value =IVstart
-        value-=1
-        return str(value)
         
-def CommandLineMode(OutputType,searchMode,threadNumber,rowData):
-    while OutputType=="1":
+def CommandLineMode(boolean,searchMode,threadNumber,rowData):
+    while boolean:
         if searchMode =="2":
             print(LC(LCShift+threadNumber-1)+"\t", end='')
             for a in rowData[threadNumber-1]:
@@ -182,9 +90,9 @@ def CommandLineMode(OutputType,searchMode,threadNumber,rowData):
             print("\n", end='')
         break
         
-def txtMode(OutputType,searchMode,threadNumber,rowData):
+def txtMode(boolean,searchMode,threadNumber,rowData):
     g4t ="\t\t\t\t"
-    while OutputType=="2":
+    while boolean:
         open('LicenseOutput.txt','a').write("series\t001\t002\t003\t999\t998\t997\t500\t501\t502\t503\t499\t498\t497\t399\t398\t397\t440\t441\t442\t444\n")
         if searchMode =="2":
             f =open('LicenseOutput.txt','a')
@@ -266,7 +174,7 @@ def animate():          #loading animation
         sys.stdout.flush()
         time.sleep(0.1)
     sys.stdout.write('\rDone!     ')
-       
+      
 #
 #            /*main program here*/
 #
@@ -276,10 +184,9 @@ LNStart =0
 LNEnd =0
 
 # while True:     #Setting thread-using number
-print("Select Search Mode: (Enter nothing will use default 3)\n\
+print("Select Search Mode: (Enter nothing will use default 2)\n\
 1. Start and End with certain License Number (eg. AAA-001 - AZK-231)\n\
-2. Search by order (8 sectors, old)\n\
-3. Search by order (4 classes, new)\n")
+2. Search by order (8 sectors)\n")
 searchMode =input("Choice: ")
 
 if searchMode == "1":
@@ -308,7 +215,16 @@ if searchMode == "1":
         print("LC from: "+LC(LCShift)+" to "+LC(LCShift+int(UserThreadInput)))
         input("Press Enter to continue...\n")
         break
-
+    
+    while True:     #Setting Output result type
+        OutputType =input("Output type: 1.Command Line output  2. .txt file output (Default =1): ")
+        if OutputType !="1" and OutputType !="2" and OutputType != "":
+            print("Wrong input.")
+        elif OutputType =="":
+            OutputType ="2"
+        else:
+            break
+  
     while True:     #Setting LNStart & LNEnd
         try:
             LNStart =(int)(input("LNStart? "))
@@ -319,25 +235,17 @@ if searchMode == "1":
                 print("Looks like you have low score on math: start at "+str(LNStart)+" end at "+str(LNEnd))
                 print("Please re-enter")
                 continue
-            print("LN From:　"+LN(LNStart)+" to: "+LN(LNEnd))
+            print("LN From: "+LN(LNStart)+" to: "+LN(LNEnd))
             input("Press Enter to continue...\n")
             break
         except ValueError:
             print("Please enter an integer.")
-    
-    while True:     #Setting Output result type
-        OutputType =input("Output type: 1.Command Line output  2. .txt file output (Default =1): ")
-        if OutputType !="1" and OutputType !="2" and OutputType != "":
-            print("Wrong input.")
-        elif OutputType =="":
-            OutputType ="2"
-        else:
-            break
-                      
+
     for threadNumber in range(-1,int(UserThreadInput)):     #Creating threads
         Thread(target=getLicence,args=(searchMode,threadNumber+1,LN(LNStart),LN(LNEnd),LCShift,)).start()
             
-elif (searchMode == "2") or (searchMode =='3') or (searchMode == ''):
+elif (searchMode == "2") or (searchMode == ''):
+    if searchMode == "":    searchMode="2"
     while True:
         try:
             UserThreadInput =input("Enter thread-using number (enter nothing will using 1): ")
@@ -373,14 +281,9 @@ elif (searchMode == "2") or (searchMode =='3') or (searchMode == ''):
         else:
             break
     
-    if searchMode ==str(2):
-        print("Series\t001\t002\t003\t999\t998\t997\t500\t501\t502\t503\t499\t498\t497\t399\t398\t397\t440\t441\t442\t444")
-    else:
-        g4t ="\t\t\t\t"
-        print("Series\tClass I"+g4t+"Class II"+g4t+"Class III"+g4t+"Class IV")
-        
+    print("series\t001\t002\t003\t999\t998\t997\t500\t501\t502\t503\t499\t498\t497\t399\t398\t397\t440\t441\t442\t444")
     for threadNumber in range(0,int(UserThreadInput)):     #Creating threads
-            Thread(target=getLicence,args=(searchMode,threadNumber+1,OutputType,LN(LNStart),LN(LNEnd),LCShift,)).start()
-    input("Done")
+            Thread(target=getLicence,args=(searchMode,threadNumber+1,LN(LNStart),LN(LNEnd),LCShift,)).start()
+    
 else:
     print("Please enter correct Search Mode Number.\n")
