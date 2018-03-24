@@ -1,5 +1,8 @@
 # coding utf8
 import itertools
+import hashlib
+import getpass
+import os
 import sys
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
@@ -59,7 +62,7 @@ def getLicence(searchMode,threadNumber,OutputType,LNStart,LNEnd,LCShift):       
                         iDate =ISD.get_text()
                         rowData[threadNumber-1][i][j] = iDate[-6:]
                     except AttributeError:
-                        rowData[threadNumber-1][i][j] = "none"
+                        rowData[threadNumber-1][i][j] = "-"
                 else:
                     continue
                 
@@ -185,21 +188,22 @@ def CommandLineMode(OutputType,searchMode,threadNumber,rowData):
 def txtMode(OutputType,searchMode,threadNumber,rowData):
     g4t ="\t\t\t\t"
     while OutputType=="2":
-        open('LicenseOutput.txt','a').write("series\t001\t002\t003\t999\t998\t997\t500\t501\t502\t503\t499\t498\t497\t399\t398\t397\t440\t441\t442\t444\n")
         if searchMode =="2":
-            f =open('LicenseOutput.txt','a')
+            f =open(filename,'a')
             f.write(LC(LCShift+threadNumber-1)+"\t")
             for a in rowData[threadNumber-1]:
                 for b in a:
                     if b !=0:   
                         f.write(b+'\t')
+            f.write('\n')
             f.close()
         elif searchMode =="3":
-            f =open('LicenseOutput.txt','a')
+            f =open(filename,'a')
             for a in rowData[threadNumber-1]:
                 for b in a:
                     if b !=0:   
                         f.write(b+g4t)
+            print("\n", end='')
             f.close()
         break
 
@@ -266,121 +270,178 @@ def animate():          #loading animation
         sys.stdout.flush()
         time.sleep(0.1)
     sys.stdout.write('\rDone!     ')
-       
-#
-#            /*main program here*/
-#
+
+def start():            #Security issue
+    if anotherTask =="n":
+        k = hashlib.sha256()
+        f =open("key.kh","r")
+        th =getpass.getpass()
+        thb =th.encode()
+        k.update(thb)
+        h =f.read()
+        res = (k.hexdigest() == h)
+        f.close()
+        return th,res
+    return
+
+"""
+
+main program start from here
+
+"""
 
 LCShift =0
 LNStart =0
 LNEnd =0
+anotherTask ="n"
 
-# while True:     #Setting thread-using number
-print("Select Search Mode: (Enter nothing will use default 3)\n\
-1. Start and End with certain License Number (eg. AAA-001 - AZK-231)\n\
-2. Search by order (8 sectors, old)\n\
-3. Search by order (4 classes, new)\n")
-searchMode =input("Choice: ")
-
-if searchMode == "1":
-    while True:
-        try:
-            UserThreadInput =input("Enter thread-using number (enter nothing will using 0): ")
-            if UserThreadInput =="" or int(UserThreadInput) <0:
-                UserThreadInput =0
-            break
-        except ValueError:
-            print("Please enter an integer.")
-    
-    while True:     #Setting LCShift
-        LCShift =LCHandle(LCShift)
-        if LCShift =="?" or LCShift =="help":
-            LCHelp()
-            continue
-        if LCShift =="calc":
-            LCCalc()
-            continue
-        if LCShift+int(UserThreadInput) >17576 or LCShift <=0: #over ZZZ or below AAA
-            print("From: "+LC(LCShift)+" to: "+LC(LCShift+int(UserThreadInput) ))
-            print("This result might not what you wanted (or you just entered a non-positive number),\n\
-    enter \"calc\" or \"?\" seek for help.\n") 
-            continue
-        print("LC from: "+LC(LCShift)+" to "+LC(LCShift+int(UserThreadInput)))
-        input("Press Enter to continue...\n")
-        break
-
-    while True:     #Setting LNStart & LNEnd
-        try:
-            LNStart =(int)(input("LNStart? "))
-            LNStart =LNHandle(LNStart)
-            LNEnd =(int)(input("LNEnd? "))
-            LNEnd =LNHandle(LNEnd)
-            if LNStart >LNEnd:
-                print("Looks like you have low score on math: start at "+str(LNStart)+" end at "+str(LNEnd))
-                print("Please re-enter")
-                continue
-            print("LN From:　"+LN(LNStart)+" to: "+LN(LNEnd))
-            input("Press Enter to continue...\n")
-            break
-        except ValueError:
-            print("Please enter an integer.")
-    
-    while True:     #Setting Output result type
-        OutputType =input("Output type: 1.Command Line output  2. .txt file output (Default =1): ")
-        if OutputType !="1" and OutputType !="2" and OutputType != "":
-            print("Wrong input.")
-        elif OutputType =="":
-            OutputType ="2"
-        else:
-            break
-                      
-    for threadNumber in range(-1,int(UserThreadInput)):     #Creating threads
-        Thread(target=getLicence,args=(searchMode,threadNumber+1,LN(LNStart),LN(LNEnd),LCShift,)).start()
+if anotherTask =="n":
+    while start() == ("owo!",True):
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("\
+Select Search Mode: (Enter nothing will use default 3)\n\
+        1. Start and End with certain License Number (eg. AAA-001 - AZK-231)\n\
+        2. Search by order (8 sectors, old)\n\
+        3. Search by order (4 classes, new)\n")
+        searchMode =input("Choice: ")
+        
+        if searchMode == "1":
+            while True:
+                try:
+                    UserThreadInput =input("Enter thread-using number (enter nothing will using 0): ")
+                    if UserThreadInput =="" or int(UserThreadInput) <0:
+                        UserThreadInput =0
+                    break
+                except ValueError:
+                    print("Please enter an integer.")
             
-elif (searchMode == "2") or (searchMode =='3') or (searchMode == ''):
-    while True:
-        try:
-            UserThreadInput =input("Enter thread-using number (enter nothing will using 1): ")
-            if UserThreadInput =="" or int(UserThreadInput) <0:
-                UserThreadInput =1
-            break
-        except ValueError:
-            print("Please enter an integer.")
+            while True:     #Setting LCShift
+                LCShift =LCHandle(LCShift)
+                if LCShift =="?" or LCShift =="help":
+                    LCHelp()
+                    continue
+                if LCShift =="calc":
+                    LCCalc()
+                    continue
+                if LCShift+int(UserThreadInput) >17576 or LCShift <=0: #over ZZZ or below AAA
+                    print("From: "+LC(LCShift)+" to: "+LC(LCShift+int(UserThreadInput) ))
+                    print("This result might not what you wanted (or you just entered a non-positive number),\n\
+            enter \"calc\" or \"?\" seek for help.\n") 
+                    continue
+                print("LC from: "+LC(LCShift)+" to "+LC(LCShift+int(UserThreadInput)))
+                input("Press Enter to continue...\n")
+                break
         
-    while True:     #Setting LCShift
-        LCShift =LCHandle(LCShift)
-        if LCShift =="?" or LCShift =="help":
-            LCHelp()
-            continue
-        if LCShift =="calc":
-            LCCalc()
-            continue
-        if LCShift+int(UserThreadInput) >17576 or LCShift <=0: #over ZZZ or below AAA
-            print("From: "+LC(LCShift)+" to: "+LC(LCShift+int(UserThreadInput) ))
-            print("This result might not what you wanted (or you just entered a non-positive number),\n\
-    enter \"calc\" or \"?\" seek for help.\n") 
-            continue
-        print("LC from: "+LC(LCShift)+" to "+LC(LCShift+int(UserThreadInput)-1))
-        input("Press Enter to continue...\n")
-        break
-    
-    while True:     #Setting Output result type
-        OutputType =input("Output type: 1.Command Line output  2. .txt file output (Default =1): ")
-        if OutputType !="1" and OutputType !="2" and OutputType != "":
-            print("Wrong input.")
-        elif OutputType =="":
-            OutputType ="2"
+            while True:     #Setting LNStart & LNEnd
+                try:
+                    LNStart =(int)(input("LNStart? "))
+                    LNStart =LNHandle(LNStart)
+                    LNEnd =(int)(input("LNEnd? "))
+                    LNEnd =LNHandle(LNEnd)
+                    if LNStart >LNEnd:
+                        print("Looks like you have low score on math: start at "+str(LNStart)+" end at "+str(LNEnd))
+                        print("Please re-enter")
+                        continue
+                    print("LN From:　"+LN(LNStart)+" to: "+LN(LNEnd))
+                    input("Press Enter to continue...\n")
+                    break
+                except ValueError:
+                    print("Please enter an integer.")
+            
+            while True:     #Setting Output result type
+                OutputType =input("Output type: 1.Command Line output  2. txt file output (Default =1): ")
+                if OutputType !="1" and OutputType !="2" and OutputType != "":
+                    print("Wrong input.")
+                elif OutputType =="":
+                    OutputType ="2"
+                else:
+                    break
+                              
+            for threadNumber in range(-1,int(UserThreadInput)):     #Creating threads
+                Thread(target=getLicence,args=(searchMode,threadNumber+1,LN(LNStart),LN(LNEnd),LCShift,)).start()
+                    
+        elif (searchMode == "2") or (searchMode =='3') or (searchMode == ''):
+            while True:
+                try:
+                    UserThreadInput =input("Enter thread-using number (enter nothing will using 1): ")
+                    if UserThreadInput =="" or int(UserThreadInput) <0:
+                        UserThreadInput =1
+                    break
+                except ValueError:
+                    print("Please enter an integer.")
+                
+            while True:     #Setting LCShift
+                LCShift =LCHandle(LCShift)
+                if LCShift =="?" or LCShift =="help":
+                    LCHelp()
+                    continue
+                if LCShift =="calc":
+                    LCCalc()
+                    continue
+                if LCShift+int(UserThreadInput) >17576 or LCShift <=0: #over ZZZ or below AAA
+                    print("From: "+LC(LCShift)+" to: "+LC(LCShift+int(UserThreadInput) ))
+                    print("This result might not what you wanted (or you just entered a non-positive number),\n\
+            enter \"calc\" or \"?\" seek for help.\n") 
+                    continue
+                print("LC from: "+LC(LCShift)+" to "+LC(LCShift+int(UserThreadInput)-1))
+                input("Press Enter to continue...\n")
+                break
+            
+            while True:     #Setting Output result type
+                OutputType =input("Output type: 1.Command Line output  2. txt file output (Default =2): ")
+                if OutputType !="1" and OutputType !="2" and OutputType != "":
+                    print("Wrong input.")
+                elif OutputType =="":
+                    OutputType ="2"
+                else:
+                    break
+            
+            if OutputType =="2":    #filename handling
+                filename =input("File name (Default \"LicenseOutput\"): ")
+                if filename =="":
+                    filename ="LicenseOutput"
+                filename =filename+".txt"
+            
+            if searchMode =="2":    #initialize output format
+                if OutputType =="1":
+                    print("Series\t001\t002\t003\t999\t998\t997\t500\t501\t502\t503\t499\t498\t497\t399\t398\t397\t440\t441\t442\t444")
+                else:
+                    if os.path.exists(filename):
+                        input("File already exists. Press any key to confirm deleting")
+                        os.remove(filename)
+                    open(filename,'a').write("series\t001\t002\t003\t999\t998\t997\t500\t501\t502\t503\t499\t498\t497\t399\t398\t397\t440\t441\t442\t444\n")
+            else:
+                g4t ="\t\t\t\t"
+                if OutputType =="1":    
+                    print("Series\tClass I"+g4t+"Class II"+g4t+"Class III"+g4t+"Class IV")
+                else:
+                    if os.path.exists(filename):
+                        input(filename+" already exists. Press any key to confirm deleting")
+                        os.remove('filename.txt')
+                    open(filename,'a').write("Series\tClass I"+g4t+"Class II"+g4t+"Class III"+g4t+"Class IV")
+            
+            threads =[]     #Creating threads
+            for threadNumber in range(0,int(UserThreadInput)):     
+                    thrd =Thread(target=getLicence,args=(searchMode,threadNumber+1,OutputType,LN(LNStart),LN(LNEnd),LCShift,))
+                    threads.append(thrd)
+            
+            for thread in threads:  #Start threads
+                thread.start()
+            
+            for thread in threads:  #Wait for threads end
+                thread.join()
+            
+            if OutputType =="1":
+                anotherTask =input("\nDone, start another task \"n\", terminate program \"x\" or any key: ").lower()
+            else:
+                size =os.stat(filename).st_size
+                path =os.getcwd()
+                print("\nDone\noutput file size: "+str(size)+" Bytes\n\
+                Path: "+path+"\n\
+                Filename: "+filename)
+                anotherTask =input("Start another task \"n\", terminate program \"x\" or any key: ").lower()
         else:
-            break
-    
-    if searchMode ==str(2):
-        print("Series\t001\t002\t003\t999\t998\t997\t500\t501\t502\t503\t499\t498\t497\t399\t398\t397\t440\t441\t442\t444")
+            print("Please enter correct Search Mode Number.\n")
     else:
-        g4t ="\t\t\t\t"
-        print("Series\tClass I"+g4t+"Class II"+g4t+"Class III"+g4t+"Class IV")
-        
-    for threadNumber in range(0,int(UserThreadInput)):     #Creating threads
-            Thread(target=getLicence,args=(searchMode,threadNumber+1,OutputType,LN(LNStart),LN(LNEnd),LCShift,)).start()
-    input("Done")
-else:
-    print("Please enter correct Search Mode Number.\n")
+        if anotherTask =="n":
+            input("Wrong password, fail to launch.")   
